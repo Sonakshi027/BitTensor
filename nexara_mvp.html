@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nexara — Dual-Intelligence Subnet MVP</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@300;400;600;800&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Exo 2',sans-serif;background:#05080f;color:#e8eaf0;min-height:100vh}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0a0e1a}::-webkit-scrollbar-thumb{background:#1a2040;border-radius:2px}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 8px #00ffb8}50%{box-shadow:0 0 20px #00ffb8,0 0 40px #00ffb844}}
+
+  /* NAV */
+  #nav{background:rgba(5,8,15,0.97);border-bottom:1px solid rgba(0,212,255,0.1);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+  .nav-logo{display:flex;align-items:center;gap:12px}
+  .logo-text{font-family:'Orbitron',monospace;font-weight:900;font-size:18px;letter-spacing:4px;background:linear-gradient(90deg,#00d4ff,#8c3cff,#00ffb8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .badge{padding:2px 8px;border:1px solid;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-family:'Share Tech Mono',monospace;border-radius:2px;display:inline-block}
+  .badge-blue{border-color:rgba(0,212,255,0.3);color:#00d4ff;background:rgba(0,212,255,0.05)}
+  .badge-purple{border-color:rgba(140,60,255,0.3);color:#8c3cff;background:rgba(140,60,255,0.05)}
+  .badge-green{border-color:rgba(0,255,184,0.3);color:#00ffb8;background:rgba(0,255,184,0.05)}
+  .badge-red{border-color:rgba(255,69,96,0.3);color:#ff4560;background:rgba(255,69,96,0.05)}
+  .badge-yellow{border-color:rgba(240,192,64,0.3);color:#f0c040;background:rgba(240,192,64,0.05)}
+
+  /* TABS */
+  .tabs{display:flex;gap:4px}
+  .tab-btn{background:none;border:none;border-bottom:2px solid transparent;padding:6px 16px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all 0.2s}
+  .tab-btn:hover{color:#00d4ff}
+  .tab-btn.active{color:#00d4ff;border-bottom-color:#00d4ff}
+
+  /* TICKER */
+  .ticker{display:flex;align-items:center;gap:16px;font-size:11px;font-family:'Share Tech Mono',monospace}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#00ffb8;box-shadow:0 0 8px #00ffb8;animation:blink 1.5s infinite;display:inline-block;margin-right:6px}
+
+  /* MAIN */
+  #main{max-width:1400px;margin:0 auto;padding:24px}
+  .page{animation:slideIn 0.4s ease;display:none}
+  .page.active{display:block}
+
+  /* STAT CARDS */
+  .stat-row{display:flex;gap:16px;margin-bottom:20px}
+  .stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:16px 20px;flex:1}
+  .stat-label{font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:6px}
+  .stat-value{font-size:28px;font-weight:900;font-family:'Orbitron',monospace;line-height:1}
+  .stat-sub{font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px}
+
+  /* GRID */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .panel{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:24px}
+  .panel-blue{border-color:rgba(0,212,255,0.12)}
+  .panel-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px}
+
+  /* SCORE RING */
+  .score-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .score-ring-sub{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.35);text-transform:uppercase}
+
+  /* SCORE BARS */
+  .score-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+  .score-box{background:rgba(255,255,255,0.03);border-radius:8px;padding:12px 14px}
+  .score-box-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .score-box-label{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px}
+  .score-num{font-size:24px;font-weight:900;font-family:'Orbitron',monospace}
+  .score-bar-bg{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:8px}
+  .score-bar-fill{height:100%;border-radius:2px;transition:width 0.5s}
+
+  /* METRICS */
+  .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .metric-row{display:flex;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.02);border-radius:6px}
+  .metric-label{font-size:11px;color:rgba(255,255,255,0.35)}
+  .metric-value{font-size:13px;font-weight:700;font-family:'Share Tech Mono',monospace}
+
+  /* ALERTS */
+  .alert-list{display:flex;flex-direction:column;gap:8px}
+  .alert-row{display:flex;align-items:center;gap:16px;padding:10px 14px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid}
+  .alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .alert-asset{font-weight:600;color:#e8eaf0;font-size:13px;min-width:160px}
+  .alert-msg{font-size:12px;color:rgba(255,255,255,0.5);flex:1}
+  .alert-time{font-size:10px;color:rgba(255,255,255,0.25);font-family:'Share Tech Mono',monospace;flex-shrink:0}
+
+  /* ASSET TABLE */
+  .asset-header{display:grid;grid-template-columns:2fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr;gap:8px;padding:8px 16px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase;font-family:'Share Tech Mono',monospace}
+  .asset-list{display:flex;flex-direction:column;gap:6px}
+  .asset-row{display:grid;grid-template-columns:2fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr;gap:8px;padding:14px 16px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:8px;align-items:center;cursor:pointer;transition:all 0.15s}
+  .asset-row:hover{background:rgba(0,212,255,0.05);border-color:rgba(0,212,255,0.15)}
+  .asset-name{font-weight:700;color:#e8eaf0;font-size:14px;margin-bottom:4px}
+  .asset-badges{display:flex;gap:6px;flex-wrap:wrap}
+  .mini-bar-bg{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-top:4px}
+  .mini-bar-fill{height:100%;border-radius:1px}
+  .score-large{font-family:'Orbitron',monospace;font-weight:700;font-size:16px}
+  .asset-score-wrap{display:flex;align-items:center;gap:10px}
+  .asset-verdict{font-size:10px;font-weight:700}
+  .asset-trend{font-size:10px;margin-top:2px}
+
+  /* QUERY */
+  .query-box{background:rgba(255,255,255,0.025);border:1px solid rgba(0,212,255,0.15);border-radius:12px;padding:24px;margin-bottom:20px}
+  .query-comment{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:12px;font-family:'Share Tech Mono',monospace}
+  .query-row{display:flex;gap:12px}
+  #queryInput{flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:12px 16px;color:#e8eaf0;font-size:14px;font-family:'Share Tech Mono',monospace;outline:none}
+  #queryInput:focus{border-color:rgba(0,212,255,0.5)}
+  #queryBtn{padding:12px 28px;background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);border-radius:6px;color:#00d4ff;font-size:13px;font-family:'Share Tech Mono',monospace;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.2s}
+  #queryBtn:hover{background:rgba(0,212,255,0.25)}
+  .quick-queries{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+  .quick-label{font-size:10px;color:rgba(255,255,255,0.25)}
+  .quick-btn{background:none;border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:3px 10px;color:rgba(255,255,255,0.4);font-size:10px;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all 0.2s}
+  .quick-btn:hover{border-color:rgba(0,212,255,0.3);color:#00d4ff}
+  .spinner-wrap{display:flex;align-items:center;gap:12px;padding:20px;background:rgba(255,255,255,0.02);border-radius:8px;margin-bottom:20px}
+  .spinner{width:20px;height:20px;border:2px solid rgba(0,212,255,0.2);border-top:2px solid #00d4ff;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+  .spinner-text{font-size:12px;color:rgba(255,255,255,0.4);font-family:'Share Tech Mono',monospace}
+  .result-panel{background:rgba(255,255,255,0.025);border:1px solid rgba(0,255,184,0.15);border-radius:12px;padding:24px;animation:slideIn 0.3s ease}
+  .result-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+  .result-confirmed{font-size:10px;color:#00ffb8;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px}
+  .result-name{font-size:22px;font-weight:800}
+  .result-contract{font-size:11px;color:rgba(255,255,255,0.3);font-family:'Share Tech Mono',monospace;margin-top:4px}
+  .json-box{background:#030508;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:20px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.8}
+  .json-comment{color:rgba(255,255,255,0.25);margin-bottom:8px}
+  .json-key-a{color:#00d4ff}
+  .json-key-b{color:#8c3cff}
+  .json-key-c{color:#00ffb8}
+  .json-val-str{color:#00ffb8}
+  .json-val-num{color:#f0c040}
+  .json-punct{color:rgba(255,255,255,0.4)}
+  .json-bracket{color:#8c3cff}
+  .json-indent{padding-left:20px}
+
+  /* NETWORK */
+  .miner-header{display:grid;grid-template-columns:0.5fr 1.2fr 1fr 1fr 1.2fr 0.8fr 0.8fr;gap:8px;padding:8px 12px;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.25);text-transform:uppercase;font-family:'Share Tech Mono',monospace}
+  .miner-row{display:grid;grid-template-columns:0.5fr 1.2fr 1fr 1fr 1.2fr 0.8fr 0.8fr;gap:8px;padding:14px 12px;border-top:1px solid rgba(255,255,255,0.04);align-items:center}
+  .miner-rank{font-family:'Orbitron',monospace;font-weight:900;font-size:18px}
+  .miner-id{font-family:'Share Tech Mono',monospace;color:#00d4ff;font-size:13px}
+  .miner-score{font-family:'Orbitron',monospace;font-weight:700;font-size:16px}
+  .emission-box{background:rgba(140,60,255,0.05);border:1px solid rgba(140,60,255,0.15);border-radius:12px;padding:20px}
+  .emission-title{font-size:12px;font-weight:700;color:#8c3cff;margin-bottom:10px;letter-spacing:1px}
+  .emission-text{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7}
+
+  /* INFO TIP */
+  .info-tip{margin-top:16px;padding:14px;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.1);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.4)}
+
+  canvas{display:block}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div id="nav">
+  <div class="nav-logo">
+    <svg width="32" height="32" viewBox="0 0 32 32">
+      <defs><linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00d4ff"/><stop offset="50%" stop-color="#8c3cff"/><stop offset="100%" stop-color="#00ffb8"/></linearGradient></defs>
+      <polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="#0b1628" stroke="url(#ng)" stroke-width="1.5"/>
+      <rect x="8" y="9" width="4" height="14" rx="1" fill="url(#ng)"/>
+      <rect x="20" y="9" width="4" height="14" rx="1" fill="url(#ng)"/>
+      <polygon points="8,9 12,9 24,23 24,19 12,9" fill="url(#ng)" opacity="0.9"/>
+      <circle cx="16" cy="16" r="1.5" fill="#fff" opacity="0.9"/>
+    </svg>
+    <span class="logo-text">NEXARA</span>
+    <span class="badge badge-blue">MVP</span>
+    <span class="badge badge-purple">Bittensor</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="assets">Asset Scanner</button>
+    <button class="tab-btn" data-tab="query">Query API</button>
+    <button class="tab-btn" data-tab="network">Network</button>
+  </div>
+
+  <div class="ticker">
+    <span class="live-dot"></span>
+    <span style="color:rgba(255,255,255,0.4)">BLOCK</span>
+    <span style="color:#00ffb8" id="blockNum">#4,192,843</span>
+    &nbsp;&nbsp;
+    <span style="color:rgba(255,255,255,0.4)">TAO</span>
+    <span style="color:#f0c040" id="taoPrice">312.44</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="stat-row">
+      <div class="stat-card" style="box-shadow:0 0 30px rgba(0,212,255,0.08)">
+        <div class="stat-label">Active Miners</div>
+        <div class="stat-value" style="color:#00d4ff" id="minerCount">47</div>
+        <div class="stat-sub">Dual-track operators</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Validators Online</div>
+        <div class="stat-value" style="color:#8c3cff">8</div>
+        <div class="stat-sub">Stake-weighted consensus</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Assets Tracked</div>
+        <div class="stat-value" style="color:#00ffb8">6</div>
+        <div class="stat-sub">Multi-chain coverage</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">TVL Monitored</div>
+        <div class="stat-value" style="color:#f0c040">$579M</div>
+        <div class="stat-sub">Total value under analysis</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Exploits Flagged</div>
+        <div class="stat-value" style="color:#ff4560">4</div>
+        <div class="stat-sub">Last 30 days (2 confirmed)</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Asset Detail -->
+      <div class="panel panel-blue">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+          <div>
+            <div class="panel-label">Selected Asset</div>
+            <div style="font-size:22px;font-weight:800;color:#e8eaf0" id="d-name">Ondo OUSG</div>
+            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center">
+              <span class="badge badge-blue" id="d-type">T-Bill Token</span>
+              <span class="badge badge-purple" id="d-chain">ETH</span>
+              <span style="font-size:10px;color:rgba(255,255,255,0.25);font-family:'Share Tech Mono',monospace" id="d-contract">0x1a26...bb03</span>
+            </div>
+          </div>
+          <div class="score-ring-wrap">
+            <canvas id="ringCanvas" width="88" height="88"></canvas>
+            <div class="score-ring-sub">Nexara Score</div>
+          </div>
+        </div>
+
+        <div class="score-grid">
+          <div class="score-box">
+            <div class="score-box-header">
+              <span class="score-box-label">Credit Risk</span>
+              <span class="badge badge-blue">Track A</span>
+            </div>
+            <div class="score-num" id="d-credit" style="color:#00ffb8">94</div>
+            <div class="score-bar-bg"><div class="score-bar-fill" id="d-credit-bar" style="width:94%;background:#00ffb8;box-shadow:0 0 6px #00ffb8"></div></div>
+          </div>
+          <div class="score-box">
+            <div class="score-box-header">
+              <span class="score-box-label">Security Score</span>
+              <span class="badge badge-purple">Track B</span>
+            </div>
+            <div class="score-num" id="d-security" style="color:#00ffb8">96</div>
+            <div class="score-bar-bg"><div class="score-bar-fill" id="d-security-bar" style="width:96%;background:#00ffb8;box-shadow:0 0 6px #00ffb8"></div></div>
+          </div>
+          <div class="score-box">
+            <div class="score-box-header">
+              <span class="score-box-label">Defect Density</span>
+              <span class="badge badge-purple">Track B</span>
+            </div>
+            <div class="score-num" id="d-defect" style="color:#00ffb8">94</div>
+            <div class="score-bar-bg"><div class="score-bar-fill" id="d-defect-bar" style="width:94%;background:#00ffb8;box-shadow:0 0 6px #00ffb8"></div></div>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-row"><span class="metric-label">TVL</span><span class="metric-value" id="d-tvl">$287.4M</span></div>
+          <div class="metric-row"><span class="metric-label">Yield Est.</span><span class="metric-value" id="d-yield" style="color:#00ffb8">5.2%</span></div>
+          <div class="metric-row"><span class="metric-label">Price</span><span class="metric-value" id="d-price">1.064</span></div>
+          <div class="metric-row"><span class="metric-label">Impact Risk</span><span class="metric-value" id="d-impact" style="color:#00ffb8">$0.8M</span></div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="panel">
+        <div class="panel-label">Price History · 24h</div>
+        <canvas id="priceChart" height="160"></canvas>
+        <div class="panel-label" style="margin-top:20px">Security Score · 24h</div>
+        <canvas id="secChart" height="110"></canvas>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="panel">
+      <div class="panel-label">Live Intelligence Alerts</div>
+      <div class="alert-list">
+        <div class="alert-row" style="border-left-color:#ff4560">
+          <div class="alert-dot" style="background:#ff4560;box-shadow:0 0 8px #ff4560"></div>
+          <span class="badge badge-red">critical</span>
+          <span class="badge badge-purple">Track B</span>
+          <span class="alert-asset">Goldfinch Senior</span>
+          <span class="alert-msg">Reentrancy pattern detected in withdrawal function</span>
+          <span class="alert-time">2m ago</span>
+        </div>
+        <div class="alert-row" style="border-left-color:#f0c040">
+          <div class="alert-dot" style="background:#f0c040;box-shadow:0 0 8px #f0c040"></div>
+          <span class="badge badge-yellow">warning</span>
+          <span class="badge badge-blue">Track A</span>
+          <span class="alert-asset">Centrifuge TIN</span>
+          <span class="alert-msg">Credit risk score degraded 8pts — issuer watchlist</span>
+          <span class="alert-time">14m ago</span>
+        </div>
+        <div class="alert-row" style="border-left-color:#f0c040">
+          <div class="alert-dot" style="background:#f0c040;box-shadow:0 0 8px #f0c040"></div>
+          <span class="badge badge-yellow">warning</span>
+          <span class="badge badge-purple">Track B</span>
+          <span class="alert-asset">TrueFi LP Token</span>
+          <span class="alert-msg">Cyclomatic complexity exceeded threshold (CC=47)</span>
+          <span class="alert-time">31m ago</span>
+        </div>
+        <div class="alert-row" style="border-left-color:#00d4ff">
+          <div class="alert-dot" style="background:#00d4ff;box-shadow:0 0 8px #00d4ff"></div>
+          <span class="badge badge-blue">info</span>
+          <span class="badge badge-purple">Track B</span>
+          <span class="alert-asset">Ondo OUSG</span>
+          <span class="alert-msg">New audit report ingested — score updated +2pts</span>
+          <span class="alert-time">1h ago</span>
+        </div>
+        <div class="alert-row" style="border-left-color:#00d4ff">
+          <div class="alert-dot" style="background:#00d4ff;box-shadow:0 0 8px #00d4ff"></div>
+          <span class="badge badge-blue">info</span>
+          <span class="badge badge-blue">Track A</span>
+          <span class="alert-asset">Maple USDC Pool</span>
+          <span class="alert-msg">Yield prediction accuracy: 97.3% (30d window)</span>
+          <span class="alert-time">2h ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSET SCANNER -->
+  <div class="page" id="page-assets">
+    <div class="panel-label">Tracked Assets — Dual-Intelligence Scoring</div>
+    <div class="asset-header">
+      <span>Asset</span><span>TVL</span><span>Yield</span><span>Credit (A)</span><span>Security (B)</span><span>Defect (B)</span><span>Impact Risk</span><span>Nexara Score</span>
+    </div>
+    <div class="asset-list" id="assetList"></div>
+    <div class="info-tip">💡 Click any row to load full dual-track analysis in the Dashboard. Scores update every Bittensor block (~12s).</div>
+  </div>
+
+  <!-- QUERY API -->
+  <div class="page" id="page-query">
+    <div class="panel-label">Nexara Intelligence API — Interactive Query</div>
+    <div class="query-box">
+      <div class="query-comment">// Query by asset name or contract address</div>
+      <div class="query-row">
+        <input id="queryInput" placeholder="e.g. 'Ondo OUSG' or '0x1a26...bb03'"/>
+        <button id="queryBtn" onclick="runQuery()">Run Query</button>
+      </div>
+      <div class="quick-queries">
+        <span class="quick-label">Quick queries:</span>
+        <button class="quick-btn" onclick="quickQuery('Maple USDC Pool')">Maple USDC Pool</button>
+        <button class="quick-btn" onclick="quickQuery('Ondo OUSG')">Ondo OUSG</button>
+        <button class="quick-btn" onclick="quickQuery('Goldfinch Senior')">Goldfinch Senior</button>
+        <button class="quick-btn" onclick="quickQuery('Backed bIBTA')">Backed bIBTA</button>
+        <button class="quick-btn" onclick="quickQuery('TrueFi LP Token')">TrueFi LP Token</button>
+      </div>
+    </div>
+    <div class="spinner-wrap" id="spinner" style="display:none">
+      <div class="spinner"></div>
+      <span class="spinner-text" id="spinnerText">Dispatching query to 47 active miners... awaiting dual-track responses...</span>
+    </div>
+    <div id="queryResult" style="display:none">
+      <div class="result-panel">
+        <div class="result-header">
+          <div>
+            <div class="result-confirmed">✓ Response received — consensus reached</div>
+            <div class="result-name" id="r-name"></div>
+            <div class="result-contract" id="r-contract"></div>
+          </div>
+          <div class="score-ring-wrap">
+            <canvas id="queryRing" width="92" height="92"></canvas>
+            <div class="score-ring-sub">Nexara Score</div>
+          </div>
+        </div>
+        <div class="json-box">
+          <div class="json-comment">// Nexara API Response — v1.0</div>
+          <div class="json-bracket">{</div>
+          <div class="json-indent">
+            <div><span class="json-key-a">"asset"</span><span class="json-punct">: </span><span class="json-val-str" id="r-j-name"></span><span class="json-punct">,</span></div>
+            <div><span class="json-key-a">"contract"</span><span class="json-punct">: </span><span class="json-val-str" id="r-j-contract"></span><span class="json-punct">,</span></div>
+            <div class="json-comment" style="margin:8px 0 4px">// Track A — Financial Intelligence</div>
+            <div><span class="json-key-a">"predicted_price"</span><span class="json-punct">: </span><span class="json-val-num" id="r-j-price"></span><span class="json-punct">,</span></div>
+            <div><span class="json-key-a">"yield_estimate"</span><span class="json-punct">: </span><span class="json-val-num" id="r-j-yield"></span><span class="json-punct">,</span></div>
+            <div><span class="json-key-a">"credit_risk_score"</span><span class="json-punct">: </span><span id="r-j-credit"></span><span class="json-punct">,</span></div>
+            <div class="json-comment" style="margin:8px 0 4px">// Track B — Smart Contract Intelligence</div>
+            <div><span class="json-key-b">"defect_density_pct"</span><span class="json-punct">: </span><span id="r-j-defect"></span><span class="json-punct">,</span></div>
+            <div><span class="json-key-b">"security_risk_score"</span><span class="json-punct">: </span><span id="r-j-security"></span><span class="json-punct">,</span></div>
+            <div><span class="json-key-b">"financial_impact_est"</span><span class="json-punct">: </span><span class="json-val-num" id="r-j-impact" style="color:#ff4560"></span><span class="json-punct">,</span></div>
+            <div class="json-comment" style="margin:8px 0 4px">// Composite</div>
+            <div><span class="json-key-c">"nexara_score"</span><span class="json-punct">: </span><span id="r-j-nexara" style="font-weight:700"></span><span class="json-punct">,</span></div>
+            <div><span class="json-key-c">"verdict"</span><span class="json-punct">: </span><span id="r-j-verdict"></span><span class="json-punct">,</span></div>
+            <div><span class="json-key-c">"confidence"</span><span class="json-punct">: </span><span class="json-val-str">"HIGH (47 miners, 8 validators)"</span></div>
+          </div>
+          <div class="json-bracket">}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NETWORK -->
+  <div class="page" id="page-network">
+    <div class="panel-label">Bittensor Network — Miner Leaderboard</div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-label">Subnet UID</div><div class="stat-value" style="color:#00d4ff">#42</div><div class="stat-sub">Nexara on Bittensor mainnet</div></div>
+      <div class="stat-card"><div class="stat-label">Emission Rate</div><div class="stat-value" style="color:#8c3cff">0.18 τ</div><div class="stat-sub">Per block allocation</div></div>
+      <div class="stat-card"><div class="stat-label">Total Stake</div><div class="stat-value" style="color:#f0c040">12,400 τ</div><div class="stat-sub">Validator stake pool</div></div>
+      <div class="stat-card" style="box-shadow:0 0 30px rgba(0,255,184,0.08)"><div class="stat-label">Avg Composite</div><div class="stat-value" style="color:#00ffb8">86.4</div><div class="stat-sub">Network accuracy score</div></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-label">Top Miners — Dual-Track Performance</div>
+      <div class="miner-header"><span>Rank</span><span>Miner ID</span><span>Track A Score</span><span>Track B Score</span><span>Composite</span><span>TAO/Block</span><span>Status</span></div>
+      <div id="minerList"></div>
+    </div>
+
+    <div class="emission-box">
+      <div class="emission-title">⚙ Dual-Track Emission Mechanics</div>
+      <div class="emission-text">
+        Each Bittensor block, validators dispatch queries to all miners requiring a <strong style="color:#00d4ff">6-field structured response</strong>: price, yield, credit risk (Track A) + defect density, security score, financial impact (Track B). Miners are scored on both tracks independently, then combined as <strong style="color:#8c3cff">60% Track A + 40% Track B</strong> into a Nexara composite score. TAO emission flows proportionally through Yuma consensus stake-weighted median aggregation. Poor performers earn less; dishonest validators are clipped.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────
+const ASSETS = [
+  { id:1, name:"Maple USDC Pool",  type:"RWA Lending",  chain:"ETH", tvl:142.6, price:1.002, yield:8.4,  credit:82, defect:12, security:88, impact:2.1,  nexara:87, trend:"up",   contract:"0x3a4e...f901" },
+  { id:2, name:"Centrifuge TIN",   type:"RWA Bond",     chain:"ETH", tvl:38.2,  price:0.994, yield:11.2, credit:71, defect:28, security:64, impact:14.8, nexara:68, trend:"down", contract:"0x9c2b...d441" },
+  { id:3, name:"Ondo OUSG",        type:"T-Bill Token", chain:"ETH", tvl:287.4, price:1.064, yield:5.2,  credit:94, defect:6,  security:96, impact:0.8,  nexara:95, trend:"up",   contract:"0x1a26...bb03" },
+  { id:4, name:"Goldfinch Senior", type:"Credit Pool",  chain:"ETH", tvl:24.1,  price:0.981, yield:14.6, credit:63, defect:41, security:51, impact:29.3, nexara:57, trend:"down", contract:"0x7f8d...c220" },
+  { id:5, name:"Backed bIBTA",     type:"Bond ETF",     chain:"ETH", tvl:67.3,  price:1.021, yield:6.8,  credit:89, defect:9,  security:91, impact:1.4,  nexara:91, trend:"up",   contract:"0x5e3f...a119" },
+  { id:6, name:"TrueFi LP Token",  type:"Credit DeFi",  chain:"ETH", tvl:19.8,  price:0.967, yield:16.1, credit:58, defect:53, security:44, impact:38.6, nexara:49, trend:"down", contract:"0x2d1c...e774" },
+];
+
+const MINERS = [
+  { rank:1, id:"0xA1f2", scoreA:94.2, scoreB:91.8, composite:93.2, tao:48.3, status:"active" },
+  { rank:2, id:"0xB3c4", scoreA:91.6, scoreB:88.4, composite:90.3, tao:44.1, status:"active" },
+  { rank:3, id:"0xD5e6", scoreA:87.1, scoreB:93.2, composite:89.7, tao:42.8, status:"active" },
+  { rank:4, id:"0xF7a8", scoreA:88.9, scoreB:82.1, composite:86.3, tao:38.5, status:"active" },
+  { rank:5, id:"0xC9b0", scoreA:79.4, scoreB:86.7, composite:82.4, tao:33.2, status:"syncing"},
+];
+
+let selectedAsset = ASSETS[2];
+let block = 4192843;
+let tao = 312.44;
+let miners = 47;
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+const scoreColor = s => s>=85?"#00ffb8":s>=65?"#f0c040":"#ff4560";
+const scoreLabel = s => s>=85?"SECURE":s>=65?"CAUTION":"AT RISK";
+
+function genSeries(base, pts=24, vol=0.015){
+  return Array.from({length:pts},(_,i)=>+(base*(1+(Math.random()-0.48)*vol*(i/pts+0.5))).toFixed(4));
+}
+
+// ── SCORE RING ────────────────────────────────────────────────────────
+function drawRing(canvasId, value, size=88){
+  const c = document.getElementById(canvasId);
+  if(!c) return;
+  const ctx = c.getContext('2d');
+  const cx=size/2, cy=size/2, r=size*0.38;
+  ctx.clearRect(0,0,size,size);
+  // bg ring
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=5; ctx.stroke();
+  // value arc
+  const col = scoreColor(value);
+  const start=-Math.PI/2, end=start+(value/100)*Math.PI*2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,start,end);
+  ctx.strokeStyle=col; ctx.lineWidth=5; ctx.lineCap='round';
+  ctx.shadowColor=col; ctx.shadowBlur=10;
+  ctx.stroke();
+  ctx.shadowBlur=0;
+  // text
+  ctx.fillStyle=col;
+  ctx.font=`800 ${size*0.22}px 'Orbitron',monospace`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(value,cx,cy+1);
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────
+let priceChart=null, secChart=null;
+
+function buildCharts(asset){
+  const priceData = genSeries(asset.price, 24, 0.008);
+  const secData   = genSeries(asset.security, 24, 0.012);
+  const labels    = Array.from({length:24},(_,i)=>`${i}h`);
+
+  if(priceChart) priceChart.destroy();
+  if(secChart)   secChart.destroy();
+
+  const commonOpts = {
+    responsive:true, animation:{duration:400},
+    plugins:{legend:{display:false},tooltip:{
+      backgroundColor:'#0d1628',borderColor:'rgba(0,212,255,0.2)',borderWidth:1,
+      titleColor:'rgba(255,255,255,0.4)',bodyColor:'#00d4ff',
+      titleFont:{family:"'Share Tech Mono',monospace",size:10},
+      bodyFont:{family:"'Share Tech Mono',monospace",size:11}
+    }},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'rgba(255,255,255,0.25)',font:{size:9}}},
+      y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'rgba(255,255,255,0.25)',font:{size:9}}}
+    }
+  };
+
+  priceChart = new Chart(document.getElementById('priceChart'),{
+    type:'line', data:{
+      labels,
+      datasets:[{data:priceData,borderColor:'#00d4ff',borderWidth:2,pointRadius:0,fill:true,
+        backgroundColor:(ctx)=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,160);g.addColorStop(0,'rgba(0,212,255,0.2)');g.addColorStop(1,'rgba(0,212,255,0)');return g;}
+      }]
+    },
+    options:{...commonOpts,
+      plugins:{...commonOpts.plugins,tooltip:{...commonOpts.plugins.tooltip,bodyColor:'#00d4ff'}},
+      scales:{...commonOpts.scales,y:{...commonOpts.scales.y,ticks:{...commonOpts.scales.y.ticks}}}
+    }
+  });
+
+  secChart = new Chart(document.getElementById('secChart'),{
+    type:'line', data:{
+      labels,
+      datasets:[{data:secData,borderColor:'#8c3cff',borderWidth:2,pointRadius:0,fill:false,
+        borderShadowColor:'#8c3cff'
+      }]
+    },
+    options:{...commonOpts,
+      plugins:{...commonOpts.plugins,tooltip:{...commonOpts.plugins.tooltip,bodyColor:'#8c3cff'}}
+    }
+  });
+}
+
+// ── DASHBOARD UPDATE ─────────────────────────────────────────────────
+function updateDashboard(asset){
+  selectedAsset = asset;
+  document.getElementById('d-name').textContent     = asset.name;
+  document.getElementById('d-type').textContent     = asset.type;
+  document.getElementById('d-chain').textContent    = asset.chain;
+  document.getElementById('d-contract').textContent = asset.contract;
+  document.getElementById('d-tvl').textContent      = `$${asset.tvl}M`;
+  document.getElementById('d-yield').textContent    = `${asset.yield}%`;
+  document.getElementById('d-price').textContent    = asset.price;
+  document.getElementById('d-impact').textContent   = `$${asset.impact}M`;
+  document.getElementById('d-impact').style.color   = asset.impact>20?'#ff4560':asset.impact>5?'#f0c040':'#00ffb8';
+
+  const credit   = asset.credit;
+  const security = asset.security;
+  const defect   = 100-asset.defect;
+
+  [['d-credit',credit],['d-security',security],['d-defect',defect]].forEach(([id,val])=>{
+    document.getElementById(id).textContent    = val;
+    document.getElementById(id).style.color    = scoreColor(val);
+    document.getElementById(id+'-bar').style.width      = val+'%';
+    document.getElementById(id+'-bar').style.background = scoreColor(val);
+    document.getElementById(id+'-bar').style.boxShadow  = `0 0 6px ${scoreColor(val)}`;
+  });
+
+  drawRing('ringCanvas', asset.nexara, 88);
+  buildCharts(asset);
+}
+
+// ── ASSET LIST ────────────────────────────────────────────────────────
+function buildAssetList(){
+  const list = document.getElementById('assetList');
+  list.innerHTML = '';
+  ASSETS.forEach(a=>{
+    const col = scoreColor(a.nexara);
+    const defCol = a.defect>30?'#ff4560':a.defect>15?'#f0c040':'#00ffb8';
+    const impCol = a.impact>20?'#ff4560':a.impact>5?'#f0c040':'#00ffb8';
+
+    const row = document.createElement('div');
+    row.className='asset-row';
+    row.innerHTML=`
+      <div>
+        <div class="asset-name">${a.name}</div>
+        <div class="asset-badges">
+          <span class="badge badge-blue">${a.type}</span>
+          <span class="badge badge-purple">${a.chain}</span>
+        </div>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace">$${a.tvl}M</div>
+      <div style="font-family:'Share Tech Mono',monospace;color:#00ffb8">${a.yield}%</div>
+      <div>
+        <div class="score-large" style="color:${scoreColor(a.credit)}">${a.credit}</div>
+        <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${a.credit}%;background:${scoreColor(a.credit)}"></div></div>
+      </div>
+      <div>
+        <div class="score-large" style="color:${scoreColor(a.security)}">${a.security}</div>
+        <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${a.security}%;background:${scoreColor(a.security)}"></div></div>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace;color:${defCol}">${a.defect}%</div>
+      <div style="font-family:'Share Tech Mono',monospace;color:${impCol}">$${a.impact}M</div>
+      <div class="asset-score-wrap">
+        <canvas id="ring-${a.id}" width="52" height="52"></canvas>
+        <div>
+          <div class="asset-verdict" style="color:${col}">${scoreLabel(a.nexara)}</div>
+          <div class="asset-trend" style="color:${a.trend==='up'?'#00ffb8':'#ff4560'}">${a.trend==='up'?'▲ Improving':'▼ Declining'}</div>
+        </div>
+      </div>`;
+    row.addEventListener('click',()=>{ updateDashboard(a); switchTab('dashboard'); });
+    list.appendChild(row);
+    setTimeout(()=>drawRing(`ring-${a.id}`, a.nexara, 52),50);
+  });
+}
+
+// ── MINER LIST ────────────────────────────────────────────────────────
+function buildMinerList(){
+  const list = document.getElementById('minerList');
+  list.innerHTML='';
+  MINERS.forEach(m=>{
+    const rankColor = m.rank===1?'#f0c040':m.rank===2?'rgba(255,255,255,0.6)':m.rank===3?'#cd7f32':'rgba(255,255,255,0.3)';
+    const statusBadge = m.status==='active'?'badge-green':'badge-yellow';
+    const row=document.createElement('div'); row.className='miner-row';
+    row.innerHTML=`
+      <div class="miner-rank" style="color:${rankColor}">#${m.rank}</div>
+      <div class="miner-id">${m.id}</div>
+      <div>
+        <div class="miner-score" style="color:${scoreColor(m.scoreA)}">${m.scoreA}</div>
+        <div class="mini-bar-bg" style="width:80%"><div class="mini-bar-fill" style="width:${m.scoreA}%;background:${scoreColor(m.scoreA)}"></div></div>
+      </div>
+      <div>
+        <div class="miner-score" style="color:${scoreColor(m.scoreB)}">${m.scoreB}</div>
+        <div class="mini-bar-bg" style="width:80%"><div class="mini-bar-fill" style="width:${m.scoreB}%;background:${scoreColor(m.scoreB)}"></div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <canvas id="mring-${m.rank}" width="52" height="52"></canvas>
+        <div style="font-size:11px;color:${scoreColor(m.composite)}">${scoreLabel(m.composite)}</div>
+      </div>
+      <div style="font-family:'Share Tech Mono',monospace;color:#f0c040">${m.tao} τ</div>
+      <span class="badge ${statusBadge}">${m.status}</span>`;
+    list.appendChild(row);
+    setTimeout(()=>drawRing(`mring-${m.rank}`,m.composite,52),50);
+  });
+}
+
+// ── QUERY ─────────────────────────────────────────────────────────────
+function quickQuery(name){
+  document.getElementById('queryInput').value=name;
+  runQuery();
+}
+
+function runQuery(){
+  const q = document.getElementById('queryInput').value.trim();
+  if(!q) return;
+  document.getElementById('queryResult').style.display='none';
+  document.getElementById('spinner').style.display='flex';
+  document.getElementById('spinnerText').textContent=`Dispatching query to ${miners} active miners... awaiting dual-track responses...`;
+  setTimeout(()=>{
+    const match = ASSETS.find(a=>a.name.toLowerCase().includes(q.toLowerCase())||a.contract.includes(q))
+                  || ASSETS[Math.floor(Math.random()*ASSETS.length)];
+    document.getElementById('spinner').style.display='none';
+    showResult(match);
+  },1800);
+}
+
+function showResult(a){
+  document.getElementById('r-name').textContent       = a.name;
+  document.getElementById('r-contract').textContent   = a.contract;
+  document.getElementById('r-j-name').textContent     = `"${a.name}"`;
+  document.getElementById('r-j-contract').textContent = `"${a.contract}"`;
+  document.getElementById('r-j-price').textContent    = a.price;
+  document.getElementById('r-j-yield').textContent    = `"${a.yield}%"`;
+  document.getElementById('r-j-credit').textContent   = a.credit;
+  document.getElementById('r-j-credit').style.color   = scoreColor(a.credit);
+  document.getElementById('r-j-defect').textContent   = a.defect;
+  document.getElementById('r-j-defect').style.color   = scoreColor(100-a.defect);
+  document.getElementById('r-j-security').textContent = a.security;
+  document.getElementById('r-j-security').style.color = scoreColor(a.security);
+  document.getElementById('r-j-impact').textContent   = `"${a.impact}M USD"`;
+  document.getElementById('r-j-nexara').textContent   = a.nexara;
+  document.getElementById('r-j-nexara').style.color   = scoreColor(a.nexara);
+  document.getElementById('r-j-verdict').textContent  = `"${scoreLabel(a.nexara)}"`;
+  document.getElementById('r-j-verdict').style.color  = scoreColor(a.nexara);
+  document.getElementById('queryResult').style.display='block';
+  setTimeout(()=>drawRing('queryRing',a.nexara,92),50);
+}
+
+document.getElementById('queryInput').addEventListener('keydown',e=>{ if(e.key==='Enter') runQuery(); });
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────
+function switchTab(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${id}"]`).classList.add('active');
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+});
+
+// ── LIVE TICKER ───────────────────────────────────────────────────────
+setInterval(()=>{
+  block += Math.floor(Math.random()*3+1);
+  tao = +(tao+(Math.random()-0.48)*0.12).toFixed(2);
+  if(Math.random()>0.85) miners++;
+  document.getElementById('blockNum').textContent = '#'+block.toLocaleString();
+  document.getElementById('taoPrice').textContent = tao;
+  document.getElementById('minerCount').textContent = miners;
+},2000);
+
+// ── INIT ─────────────────────────────────────────────────────────────
+updateDashboard(selectedAsset);
+buildAssetList();
+buildMinerList();
+</script>
+</body>
+</html>
